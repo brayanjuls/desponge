@@ -2,6 +2,8 @@ package com.desponge
 
 import com.desponge.adapters.{SinkKafkaOperator, SourceTwitterAPIOperator}
 import com.desponge.port.{SinkOperator, SourceOperator}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 
 object Main extends App{
@@ -13,7 +15,6 @@ object Main extends App{
   val task = new java.util.TimerTask {
     def run() = {
       val generatedData  = source.consumeList("1262002053683044352",20)
-
       sink.produce("twitter_de_content",generatedData,Seq.empty[(String,String)])
     }
   }
