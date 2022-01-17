@@ -1,13 +1,5 @@
 version: '3.9'
 services:
-  postgres:
-    image: debezium/example-postgres:${DEBEZIUM_VERSION}
-    container_name: postgres
-    ports:
-     - 5432:5432
-    environment:
-     - POSTGRES_USER=postgres
-     - POSTGRES_PASSWORD=postgres
   debezium-server:
     image: debezium/server:${DEBEZIUM_VERSION}
     container_name: debezium-server
