@@ -16,7 +16,9 @@ libraryDependencies ++= Seq(
  "org.apache.kafka" % "kafka-clients" % "2.6.0",
  "org.apache.kafka" %% "kafka" % "2.8.1",
  "org.scalactic" %% "scalactic" % "3.2.10",
- "org.scalatest" %% "scalatest" % "3.2.10" % "test"
+ "org.scalatest" %% "scalatest" % "3.2.10" % "test",
+ "io.github.finagle" %% "finagle-postgres" % "0.13.0",
+ "com.github.pureconfig" %% "pureconfig" % "0.17.1"
 )
 
 libraryDependencies ++= Seq(
