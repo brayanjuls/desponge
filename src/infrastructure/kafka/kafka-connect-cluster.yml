@@ -1,0 +1,32 @@
+## Kafka Connect cluster
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: desponge-connect-cluster
+  annotations:
+  # use-connector-resources configures this KafkaConnect
+  # to use KafkaConnector resources to avoid
+  # needing to call the Connect REST API directly
+    strimzi.io/use-connector-resources: "true"
+spec:
+  image: brayanjuls/connect-debezium
+  replicas: 1
+  bootstrapServers: desponge-cluster-kafka-bootstrap:9093
+  tls:
+    trustedCertificates:
+      - secretName: desponge-cluster-cluster-ca-cert
+        certificate: ca.crt
+  config:
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+    config.providers: file
+    config.providers.file.class: org.apache.kafka.common.config.provider.FileConfigProvider
+    key.converter.schemas.enable: false
+    value.converter.schemas.enable: false
+    cleanup.policy: compact 
+  externalConfiguration:
+    volumes:
+      - name: connector-config
+        secret:
+          secretName: postgres-credentials
