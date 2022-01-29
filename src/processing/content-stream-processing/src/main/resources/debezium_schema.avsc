@@ -1,0 +1,202 @@
+{
+  "name": "testing_debezium.source.tweets",
+  "type": "record",
+  "fields": [
+    {
+      "name": "before",
+      "default": null,
+      "type": [
+        "null",
+        {
+        "type": "record",
+        "name": "before",
+        "fields": [
+          {
+            "type": "string",
+            "name": "id"
+          },
+          {
+            "type": "string",
+            "name": "text"
+          },
+          {
+            "type": "string",
+            "name": "url"
+          },
+          {
+            "type": "string",
+            "name": "lang"
+          },
+          {
+            "type": "int",
+            "name": "created_at"
+          },
+          {
+            "type": "string",
+            "name": "author_name"
+          },
+          {
+            "type": "string",
+            "name": "author_user_name"
+          },
+          {
+            "type": "string",
+            "name": "author_email"
+          },
+          {
+            "type": "boolean",
+            "name": "retweeted"
+          }
+        ]
+        }
+      ]
+    },
+    {
+      "name": "after",
+      "type": [
+        "null",
+        {
+          "name": "after",
+          "type": "record",
+          "fields": [
+            {
+              "type": "string",
+              "name": "id"
+            },
+            {
+              "type": "string",
+              "name": "text"
+            },
+            {
+              "type": "string",
+              "name": "url"
+            },
+            {
+              "type": "string",
+              "name": "lang"
+            },
+            {
+              "type": "int",
+              "name": "created_at"
+            },
+            {
+              "type": "string",
+              "name": "author_name"
+            },
+            {
+              "type": "string",
+              "name": "author_user_name"
+            },
+            {
+              "type": ["string","null"],
+              "name": "author_email"
+            },
+            {
+              "type": "boolean",
+              "name": "retweeted"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "source",
+      "default": null,
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "source",
+          "fields": [
+            {
+              "type": "string",
+              "name": "version"
+            },
+            {
+              "type": "string",
+              "name": "connector"
+            },
+            {
+              "type": "string",
+              "name": "name"
+            },
+            {
+              "type": "long",
+              "name": "ts_ms"
+            },
+            {
+              "type": "string",
+              "version": 1,
+              "parameters": {
+                "allowed": "true,last,false,incremental"
+              },
+              "default": "false",
+              "name": "snapshot"
+            },
+            {
+              "type": "string",
+              "name": "db"
+            },
+            {
+              "type": "string",
+              "name": "sequence"
+            },
+            {
+              "type": "string",
+              "name": "schema"
+            },
+            {
+              "type": "string",
+              "name": "table"
+            },
+            {
+              "type": "int",
+              "name": "txId"
+            },
+            {
+              "type": "int",
+              "name": "lsn"
+            },
+            {
+              "type": ["int","null"],
+              "name": "xmin"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "name": "op"
+    },
+    {
+      "type": "long",
+      "name": "ts_ms"
+    },
+    {
+      "name": "transaction",
+      "default": null,
+      "type": [
+        "null",
+        {
+          "name": "transaction",
+          "type": "record",
+          "fields": [
+            {
+              "type": "string",
+              "name": "id"
+            },
+            {
+              "type": "int",
+              "name": "total_order"
+            },
+            {
+              "type": "int",
+              "name": "data_collection_order"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
