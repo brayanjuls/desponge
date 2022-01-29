@@ -4,7 +4,7 @@ package adapters
 import port.SourceOperator
 
 import com.danielasfregola.twitter4s.TwitterRestClient
-import com.danielasfregola.twitter4s.entities.Tweet
+import com.danielasfregola.twitter4s.entities.{RatedData, Tweet}
 import com.danielasfregola.twitter4s.entities.enums.TweetMode
 import com.desponge.model.DETweet
 
@@ -26,9 +26,9 @@ class SourceTwitterAPIOperator extends SourceOperator {
    * @param pageSize request fetch size
    * @return future of twitter4s sequence tweet objects
    */
-  def apiRequest(twitterListId:Long, pageSize:Int) ={
+  def apiRequest(twitterListId:Long, pageSize:Int): Future[RatedData[Seq[Tweet]]] ={
     val restClient = TwitterRestClient()
-    val apiResponse = restClient.listTimelineByListId(list_id =twitterListId,tweet_mode = TweetMode.Extended,count = pageSize)
+    val apiResponse = restClient.listTimelineByListId(list_id =twitterListId,tweet_mode = TweetMode.Extended,count = pageSize,include_rts = true)
     apiResponse
   }
 

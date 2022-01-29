@@ -18,7 +18,7 @@ import pureconfig.generic.auto._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SinkPostgresOperator extends SinkOperator{
-  val logger = Logger("SinkPostgresOperator")
+  val logger: Logger = Logger("SinkPostgresOperator")
 
   /**
    * function that sink tweet events to the streaming log.
@@ -32,17 +32,17 @@ class SinkPostgresOperator extends SinkOperator{
     messages.onComplete{
       case Success(value) =>
         persistTweetsRows(postgresClient,storageName,value)
-      case Failure(exception) =>  logger.info(s"exception ${exception}"); throw new RuntimeException(exception.getMessage)
+      case Failure(exception) =>  logger.info(s"exception $exception"); throw new RuntimeException(exception.getMessage)
     }
+  }
 
-    def persistTweetsRows(client:PostgresClientImpl,tableName:String,events: Seq[DETweet]):Unit = {
-      events.foreach(tweet => {
+  def persistTweetsRows(client:PostgresClientImpl,tableName:String,events: Seq[DETweet]):Unit = {
+    events.foreach(tweet => {
       Await.result {
-            client.prepareAndExecute(s"INSERT INTO $tableName  (id,text,url,lang,created_at,author_name,author_user_name,author_email,retweeted) VALUES ($$1,$$2,$$3,$$4,$$5,$$6,$$7,$$8,$$9) ON CONFLICT(url) DO NOTHING;",tweet.id,tweet.text,tweet.url,tweet.lang,tweet.createdAt,tweet.author.name,tweet.author.screen_name,tweet.author.email,tweet.retweeted)
-        }
-      })
+        client.prepareAndExecute(s"INSERT INTO $tableName  (id,text,url,lang,created_at,author_name,author_user_name,author_email,retweeted) VALUES ($$1,$$2,$$3,$$4,$$5,$$6,$$7,$$8,$$9) ON CONFLICT(url) DO NOTHING;",tweet.id,tweet.text,tweet.url,tweet.lang,tweet.createdAt,tweet.author.name,tweet.author.screen_name,tweet.author.email,tweet.retweeted)
       }
-    }
+    })
+  }
 }
 
 object  SinkPostgresOperator {
