@@ -7,16 +7,18 @@ import com.danielasfregola.twitter4s.TwitterRestClient
 import com.danielasfregola.twitter4s.entities.{RatedData, Tweet}
 import com.danielasfregola.twitter4s.entities.enums.TweetMode
 import com.desponge.model.DETweet
+import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.streaming.StreamingContext
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.language.implicitConversions
 
 
 class SourceTwitterAPIOperator extends SourceOperator {
-  override def consumeList(id: String, pageSize: Int): Future[Seq[DETweet]] = {
-    val apiResponse =  apiRequest(id.toLong,pageSize)
-    val tweetList = apiResponse.flatMap(response => Future{response.data})
-    convertToDETweet(tweetList)
+
+  override def consumeList(id: String, pageSize: Int)(implicit ssc:StreamingContext ): DStream[DETweet] = {
+    val tweets:DStream[Tweet] =  ssc.receiverStream(new TwitterReceiver(id.toLong,pageSize))
+    tweets
   }
 
   /**
@@ -37,10 +39,8 @@ class SourceTwitterAPIOperator extends SourceOperator {
    * @param tweets sequence of tweet object from twitter4s library
    * @return sequence of data engineering related tweet object
    */
-  def convertToDETweet(tweets: Future[Seq[Tweet]]): Future[Seq[DETweet]]  = {
-
-    tweets.map(tweetSeq=> tweetSeq.map(tweet => DETweet(tweet)))
-
+  implicit def  convertToDETweet(tweets: DStream[Tweet]): DStream[DETweet]  = {
+    tweets.map(tweet=>  DETweet(tweet))
   }
 
 

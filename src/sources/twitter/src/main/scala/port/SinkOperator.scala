@@ -3,8 +3,7 @@ package port
 
 import model.DETweet
 
-import scala.concurrent.Future
-
+import org.apache.spark.streaming.dstream.DStream
 
 trait SinkOperator {
 
@@ -15,5 +14,5 @@ trait SinkOperator {
    * @param attributes a sequence of attributes that could be attached to each event.
    * @return unit in case of failures this may throw an runtime exception or checked exception
    */
-  def produce(storageName:String, messages:Future[Seq[DETweet]], attributes:Seq[(String, String)]):Unit
+  def produce(storageName:String, messages:DStream[DETweet], attributes:Seq[(String, String)]):Unit
 }

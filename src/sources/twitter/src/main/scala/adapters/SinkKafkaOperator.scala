@@ -5,46 +5,37 @@ import port.SinkOperator
 
 import com.desponge.adapters.SinkKafkaOperator.generateProducer
 import com.desponge.model.DETweet
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import com.typesafe.scalalogging.Logger
 import io.circe.generic.auto._
 import io.circe.syntax._
+import org.apache.spark.streaming.dstream.DStream
 
 import java.util.Properties
 
 class SinkKafkaOperator extends SinkOperator {
   val logger = Logger("SinkKafkaOperator")
-  override def produce(topicName: String, messages: Future[Seq[DETweet]], attributes: Seq[(String, String)]): Unit = {
-    messages.onComplete{
-      case Success(value) =>
-        produceToKafka(topicName, value)
-      case Failure(exception) =>  logger.info(s"exception ${exception}"); throw new RuntimeException(exception.getMessage)
+  override def produce(topicName: String, messages: DStream[DETweet], attributes: Seq[(String, String)]): Unit = {
+    val producer = generateProducer
+    messages.foreachRDD{ rdd =>
+      rdd.foreachPartition{partition =>
+        partition.foreach { tweet =>
+          produceToKafka(topicName,producer,tweet)
+        }
+      }
     }
   }
 
   /**
    * Send tweets to a kafka topic without transaction guarantee.
    * @param topicName name of the topic where the events will be persisted
-   * @param events sequence of data engineering tweet events
+   * @param tweet object of data engineering tweet event
    */
-  def produceToKafka(topicName: String, events: Seq[DETweet]): Unit ={
-
-    val producer = generateProducer
+  def produceToKafka(topicName: String,producer:KafkaProducer[String,String] ,tweet: DETweet): Unit ={
     logger.info(producer.toString)
-   // producer.initTransactions()
-  //  producer.beginTransaction()
-    events.foreach(tweet => {
-      val kafkaKey = tweet.url
-      val kafkaEvent = tweet.asJson.noSpaces
-      producer.send(new ProducerRecord[String, String](topicName, kafkaKey, kafkaEvent)).get()
-    })
-  //  producer.commitTransaction()
-
+    val kafkaKey = tweet.url
+    val kafkaEvent = tweet.asJson.noSpaces
+    producer.send(new ProducerRecord[String, String](topicName, kafkaKey, kafkaEvent)).get()
   }
 }
 
@@ -59,10 +50,8 @@ object SinkKafkaOperator{
       val props = new Properties()
       props.put("bootstrap.servers", "192.168.1.21:52776")
       props.put("acks", "all")
-      //props.put("retries", "1")
       props.put("linger.ms", "1")
       props.put("enable.idempotence","true")
-      // props.put("transactional.id", "test-1");
       props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
       props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
       new KafkaProducer[String, String](props)
