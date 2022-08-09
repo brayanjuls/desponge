@@ -3,8 +3,7 @@ package port
 
 import model.DETweet
 
-import org.apache.spark.streaming.StreamingContext
-import org.apache.spark.streaming.dstream.DStream
+import scala.concurrent.Future
 
 trait SourceOperator {
   /**
@@ -14,5 +13,5 @@ trait SourceOperator {
    * @param pageSize number of record to be retrieved
    * @return a future sequence of tweets that should be stored in the destination storage for later processing.
    * */
-  def consumeList(id:String, pageSize:Int)(implicit spark:StreamingContext ):DStream[DETweet]
+  def consumeList(id:String, pageSize:Int):Future[Seq[DETweet]]
 }
