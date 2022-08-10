@@ -29,6 +29,19 @@ CREATE TABLE IF NOT EXISTS source.de_categories(
 );
 CREATE UNIQUE INDEX de_categories_word_index on source.de_categories (key_word,category);
 
+
+CREATE SCHEMA sink;
+
+CREATE TABLE IF NOT EXISTS sink.dataeng_content (
+    id varchar not null,
+    url varchar not null,
+    categories text[] not null,
+    updated_at date,
+    authors text[],
+    primary key (url)
+);
+
 -- DROP TABLE source.tweets;
 -- DROP TABLE source.tweet_words;
 -- DROP TABLE source.de_categories;
+-- DROP TABLE sink.dataeng_content;

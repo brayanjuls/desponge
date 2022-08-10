@@ -25,4 +25,5 @@ spec:
 # kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.27.1-kafka-3.0.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server desponge-cluster-kafka-bootstrap:9092 --topic testing-debezium.source.tweets --from-beginning
 
 # kubectl -n kafka exec desponge-cluster-kafka-0 -c kafka -i -t -- bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
-# kubectl -n kafka exec desponge-cluster-kafka-0 -c kafka -i -t -- bin/kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic testing-debezium.source.tweets
+# kubectl -n kafka exec desponge-cluster-kafka-0 -c kafka -i -t -- bin/kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic testing-debezium.source.
+# kubectl -n kafka exec desponge-cluster-kafka-0 -c kafka -i -t -- bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic sink.de_categorized_content

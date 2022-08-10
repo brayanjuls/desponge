@@ -26,3 +26,4 @@ rm debezium-postgresql-credentials.properties
 ## Create the kafka connect cluster
 kubectl -n kafka apply -f kafka-connect-cluster.yml
 
+## When using MINIKUBE open an ssh tunnel loadbalancer using the command "minikube tunnel"
