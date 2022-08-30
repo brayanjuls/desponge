@@ -35,12 +35,13 @@ class SinkKafkaOperator extends SinkOperator {
   def produceToKafka(topicName: String, events: Seq[DETweet]): Unit ={
 
     val producer = generateProducer
-    logger.info(producer.toString)
    // producer.initTransactions()
   //  producer.beginTransaction()
+
     events.foreach(tweet => {
       val kafkaKey = tweet.url
       val kafkaEvent = tweet.asJson.noSpaces
+      logger.info("%s".format(kafkaEvent))
       producer.send(new ProducerRecord[String, String](topicName, kafkaKey, kafkaEvent)).get()
     })
   //  producer.commitTransaction()
@@ -57,7 +58,7 @@ object SinkKafkaOperator{
    */
   lazy val generateProducer :KafkaProducer[String,String] = {
       val props = new Properties()
-      props.put("bootstrap.servers", "192.168.1.21:52776")
+      props.put("bootstrap.servers", "localhost:9094")
       props.put("acks", "all")
       //props.put("retries", "1")
       props.put("linger.ms", "1")

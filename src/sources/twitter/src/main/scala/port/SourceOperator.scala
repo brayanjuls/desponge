@@ -13,5 +13,5 @@ trait SourceOperator {
    * @param pageSize number of record to be retrieved
    * @return a future sequence of tweets that should be stored in the destination storage for later processing.
    * */
-  def consumeList(id:String, pageSize:Int):Future[Seq[DETweet]]
+  def consumeList(id:String, pageSize:Int,lastConsumedId:Option[Long]):Future[Seq[DETweet]]
 }
