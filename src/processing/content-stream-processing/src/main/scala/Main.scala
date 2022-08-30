@@ -1,16 +1,13 @@
 import Model.{CategorizedContent, PostgresConf}
-import org.apache.avro.Schema
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.apache.spark.sql.avro.SchemaConverters
-import org.apache.spark.sql.functions.{broadcast, col, collect_set, current_timestamp, from_json, from_unixtime, lit, struct, to_json, window}
+import org.apache.spark.sql.functions.{broadcast, col, collect_set, current_timestamp, from_json,struct, to_json, window}
 import org.apache.spark.sql.streaming.Trigger.ProcessingTime
 import org.apache.spark.sql.streaming.{StreamingQuery, Trigger}
+import org.apache.spark.sql.types.{BooleanType, StringType, StructField, StructType}
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
-
-import java.nio.file.{Files, Paths}
 import java.util.Properties
-import scala.concurrent.duration.DurationInt
+
 object Main extends App{
   val spark = SparkSession
     .builder
@@ -29,7 +26,7 @@ object Main extends App{
       .readStream
       .format("kafka")
       .option("kafka.bootstrap.servers","localhost:9094")
-      .option("subscribe","testing-debezium.source.tweets")
+      .option("subscribe","source.tweets")
       .option("startingOffsets", "latest")
       .load()
   }
@@ -51,11 +48,22 @@ object Main extends App{
   }
 
   def parseLiveTweets(tweets:DataFrame) ={
-    val jsonFormatSchema = new String(Files.readAllBytes(Paths.get("./src/main/resources/debezium_schema.avsc")))
-    val schema = SchemaConverters.toSqlType(new Schema.Parser().parse(jsonFormatSchema)).dataType
-
+    val newSchema = StructType(Array(
+        StructField("id",StringType),
+        StructField("text",StringType),
+        StructField("url",StringType),
+        StructField("lang",StringType),
+        StructField("createdAt",StringType),
+        StructField("user",StructType(Array(
+          StructField("id",StringType),
+          StructField("name",StringType),
+          StructField("username",StringType),
+          StructField("email",StringType),
+        ))),
+        StructField("retweeted",BooleanType),
+      ))
     tweets
-      .select(from_json(col("value").cast("STRING"),schema).as("data"))
+      .select(from_json(col("value").cast("STRING"),newSchema).as("data"))
 
   }
 
@@ -63,11 +71,11 @@ object Main extends App{
     //tweets.show()
     //deKeyWords.show()
     tweets
-      .withColumn("ts",current_timestamp())
-      .withWatermark("ts","0 seconds")
-      .join(broadcast(deKeyWords),col("data.after.text").contains(col("word")))
-      .groupBy(window(col("ts"),"1 seconds"),$"data.after.id",$"data.after.url",$"ts".as("updated_at"))
-      .agg(collect_set("word").as("categories"),collect_set("data.after.author_user_name").as("authors"))
+      .withColumn("timestamp",current_timestamp())
+      .withWatermark("timestamp","0 seconds")
+      .join(broadcast(deKeyWords),col("data.text").contains(col("word")))
+      .groupBy(window(col("timestamp"),"1 seconds"),$"data.id",$"data.url",$"timestamp".as("updated_at"))
+      .agg(collect_set("word").as("categories"),collect_set("data.user.username").as("authors"))
   }
 
   def parseToKafkaFormat(deTweets:DataFrame) = {
@@ -106,17 +114,16 @@ object Main extends App{
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9094")
       .option("topic", "sink.dataeng.content")
-      .option("checkpointLocation", "/Users/brayanjules/Projects/personal/data_engineer/kafka_checkpoint_2/")
+      .option("checkpointLocation", "/Users/brayanjules/Projects/personal/data_engineer/kafka_checkpoint_3/")
       .outputMode("update")
       .trigger(ProcessingTime("30 seconds"))
       .start()
   }
 
 
-
-  def debugStreamProcess(query:StreamingQuery) = {
-    new Thread(()=> {
-      (1 to 1000).foreach(i =>{
+  def debugStreamProcess(query: StreamingQuery): Unit = {
+    new Thread(() => {
+      (1 to 1000).foreach(i => {
         Thread.sleep(1000)
         val queryEventTime =
           if (query.lastProgress == null) "[]"
